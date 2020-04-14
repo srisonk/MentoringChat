@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "39304381067",
+    "firebase_url": "https://mentoringchat-a0917.firebaseio.com",
+    "project_id": "mentoringchat-a0917",
+    "storage_bucket": "mentoringchat-a0917.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:39304381067:android:b86201eadb62a5200a0a8e",
+        "android_client_info": {
+          "package_name": "com.example.mentoringchat"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "39304381067-elvv4ofn3er75h6ilns3flkr4frn36cp.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA8a_7SaTr3TO1R2jXrG_kbqS0hRQp9_fo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "39304381067-elvv4ofn3er75h6ilns3flkr4frn36cp.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
