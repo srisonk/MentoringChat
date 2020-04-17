@@ -5,8 +5,8 @@ import com.google.android.material.snackbar.Snackbar
 import androidx.appcompat.app.AppCompatActivity
 import android.view.Menu
 import android.view.MenuItem
-import androidx.viewpager.widget.ViewPager
 import androidx.appcompat.widget.Toolbar
+import androidx.viewpager.widget.ViewPager
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
