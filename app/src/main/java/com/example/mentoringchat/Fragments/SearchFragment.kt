@@ -21,9 +21,6 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 import kotlinx.android.synthetic.main.fragment_search.*
 
-/**
- * A simple [Fragment] subclass.
- */
 class SearchFragment : Fragment() {
     private var userAdapter: UserAdapter? = null
     private var mUsers: List<Users>? = null

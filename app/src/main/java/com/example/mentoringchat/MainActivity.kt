@@ -45,7 +45,7 @@ class MainActivity : AppCompatActivity() {
         val viewPagerAdapter = ViewPagerAdapter(supportFragmentManager)
 
         viewPagerAdapter.addFragment(ChatsFragment(), "Chats")
-        viewPagerAdapter.addFragment(SearchFragment(), "Search")
+        viewPagerAdapter.addFragment(SearchFragment(), "Contacts")
         viewPagerAdapter.addFragment(SettingsFragment(), "Settings")
 
         viewPager.adapter = viewPagerAdapter
