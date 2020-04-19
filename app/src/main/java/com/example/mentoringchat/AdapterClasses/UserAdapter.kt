@@ -1,11 +1,16 @@
 package com.example.mentoringchat.AdapterClasses
 
+import android.app.AlertDialog
 import android.content.Context
+import android.content.DialogInterface
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import com.example.mentoringchat.MainActivity
+import com.example.mentoringchat.MessageChatActivity
 import com.example.mentoringchat.ModelClasses.Users
 import com.example.mentoringchat.R
 import com.squareup.picasso.Picasso
@@ -42,6 +47,28 @@ class UserAdapter(mContext: Context,
 
         holder.userNameTxt.text = user!!.getUsername()
         Picasso.get().load(user.getProfile()).placeholder(R.drawable.profile).into(holder.profileImageView)
+
+        holder.itemView.setOnClickListener {
+            val options = arrayOf<CharSequence>(
+                "Send Message",
+                "View Profile"
+            )
+            val builder: AlertDialog.Builder = AlertDialog.Builder(mContext)
+            builder.setTitle("Select an option")
+            builder.setItems(options, DialogInterface.OnClickListener { dialog, position ->
+                if(position == 0)
+                {
+                    val intent = Intent(mContext, MessageChatActivity::class.java)
+                    intent.putExtra("visit_id", user.getUID())
+                    mContext.startActivity(intent)
+                }
+                if(position == 1)
+                {
+
+                }
+            })
+            builder.show()
+        }
     }
 
     class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
