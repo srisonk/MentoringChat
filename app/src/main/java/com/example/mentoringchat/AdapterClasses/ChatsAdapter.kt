@@ -20,30 +20,34 @@ import kotlinx.android.synthetic.main.message_item_left.view.*
 class ChatsAdapter(
     mContext: Context,
     mChatList: List<Chat>,
-    imageUrl: String
+    uID: String
+//    ,
+//    imageUrl: String
 ) : RecyclerView.Adapter<ChatsAdapter.ViewHolder?>()
 {
     private val mContext: Context
     private val mChatList: List<Chat>
-    private val imageUrl: String
-    var firebaseUser : FirebaseUser = FirebaseAuth.getInstance().currentUser!!
+    private val uID: String
+//    private val imageUrl: String
+    //var firebaseUser : FirebaseUser = FirebaseAuth.getInstance().currentUser!!
 
     init {
         this.mChatList = mChatList
         this.mContext = mContext
-        this.imageUrl = imageUrl
+        this.uID = uID
+//        this.imageUrl = imageUrl
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, position: Int): ViewHolder
     {
         return if (position == 1)
         {
-            val view:View = LayoutInflater.from(mContext).inflate(com.example.mentoringchat.R.layout.message_item_right, parent, false)
+            val view:View = LayoutInflater.from(mContext).inflate(R.layout.message_item_right, parent, false)
             ViewHolder(view)
         }
         else
         {
-            val view:View = LayoutInflater.from(mContext).inflate(com.example.mentoringchat.R.layout.message_item_left, parent, false)
+            val view:View = LayoutInflater.from(mContext).inflate(R.layout.message_item_left, parent, false)
             ViewHolder(view)
         }
     }
@@ -54,6 +58,7 @@ class ChatsAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int)
     {
+        val imageUrl = "https://firebasestorage.googleapis.com/v0/b/mentoringchat-a0917.appspot.com/o/cover.jpg?alt=media&token=ed336236-c80c-4a1c-ba98-8a6980a8ee1f"
         val chat: Chat = mChatList[position]
 
         Picasso.get().load(imageUrl).into(holder.profile_image)
@@ -62,14 +67,14 @@ class ChatsAdapter(
         if(chat.getMessage().equals("sent you an image.") && !chat.getUrl().equals(""))
         {
             // Image messages - Sender side
-            if (chat.getSender().equals(firebaseUser!!.uid))
+            if (chat.getSender().equals(uID))
             {
                 holder.show_text_message!!.visibility = View.GONE
                 holder.right_image_view!!.visibility = View.VISIBLE
                 Picasso.get().load(chat.getUrl()).into(holder.right_image_view)
             }
             // Image messages - Receiver side
-            else if (!chat.getSender().equals(firebaseUser!!.uid))
+            else if (!chat.getSender().equals(uID))
             {
                 holder.show_text_message!!.visibility = View.GONE
                 holder.left_image_view!!.visibility = View.VISIBLE
@@ -82,7 +87,7 @@ class ChatsAdapter(
             holder.show_text_message!!.text = chat.getMessage()
         }
 
-        // Sent and seen message status
+        //Sent and seen message status
         if(position == mChatList.size-1)
         {
             if(chat.isIsSeen())
@@ -133,7 +138,7 @@ class ChatsAdapter(
 
     override fun getItemViewType(position: Int): Int
     {
-        return if(mChatList[position].getSender().equals(firebaseUser!!.uid))
+        return if(mChatList[position].getSender().equals(uID))
         {
             1
         }

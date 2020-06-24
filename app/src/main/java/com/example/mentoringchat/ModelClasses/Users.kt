@@ -2,47 +2,41 @@ package com.example.mentoringchat.ModelClasses
 
 class Users
 {
-    private var uid: String = ""
+    private var user_id: String = ""
     private var username: String = ""
-    private var profile: String = ""
-    private var cover: String = ""
-    private var status: String = ""
-    private var search: String = ""
-    private var facebook: String = ""
-    private var instagram: String = ""
-    private var websiter: String = ""
+    private var gender: String = ""
+    private var nationality: String = ""
+    private var password: String = ""
+    private var birthdate: String = ""
+    private var course_id: String = ""
 
     constructor()
 
 
     constructor(
-        uid: String,
+        user_id: String,
         username: String,
-        profile: String,
-        cover: String,
-        status: String,
-        search: String,
-        facebook: String,
-        instagram: String,
-        websiter: String
+        gender: String,
+        nationality: String,
+        password: String,
+        birthdate: String,
+        course_id: String
     ) {
-        this.uid = uid
+        this.user_id = user_id
         this.username = username
-        this.profile = profile
-        this.cover = cover
-        this.status = status
-        this.search = search
-        this.facebook = facebook
-        this.instagram = instagram
-        this.websiter = websiter
+        this.gender = gender
+        this.nationality = nationality
+        this.password = password
+        this.birthdate = birthdate
+        this.course_id = course_id
     }
 
     fun getUID(): String?{
-    return uid
+    return user_id
 }
 
-    fun setUID(uid: String){
-        this.uid=uid
+    fun setUID(user_id: String){
+        this.user_id=user_id
     }
 
     fun getUsername(): String?{
@@ -53,61 +47,43 @@ class Users
         this.username=username
     }
 
-    fun getProfile(): String?{
-        return profile
+    fun getGender(): String?{
+        return gender
     }
 
-    fun setProfile(profile: String){
-        this.profile=profile
+    fun setGender(gender: String){
+        this.gender=gender
     }
 
-    fun getCover(): String?{
-        return cover
+    fun getNationality(): String?{
+        return nationality
     }
 
-    fun setCover(cover: String){
-        this.cover=cover
+    fun setNationality(nationality: String){
+        this.nationality=nationality
     }
 
-    fun getStatus(): String?{
-        return status
+    fun getPassword(): String?{
+        return password
     }
 
-    fun setStatus(status: String){
-        this.status=status
+    fun setPassword(password: String){
+        this.password=password
     }
 
-    fun getSearch(): String?{
-        return search
+    fun getBirthdate(): String?{
+        return birthdate
     }
 
-    fun setSearch(search: String){
-        this.search=search
+    fun setBirthdate(birthdate: String){
+        this.birthdate=birthdate
     }
 
-    fun getFacebook(): String?{
-        return facebook
+    fun getCourseId(): String?{
+        return course_id
     }
 
-    fun setFacebook(facebook: String){
-        this.facebook=facebook
+    fun setCourseId(course_id: String){
+        this.course_id=course_id
     }
-
-    fun getInstagram(): String?{
-        return instagram
-    }
-
-    fun setInstagram(instagram: String){
-        this.instagram=instagram
-    }
-
-    fun getWebsiter(): String?{
-        return websiter
-    }
-
-    fun setWebsiter(websiter: String){
-        this.websiter=websiter
-    }
-
-
 }

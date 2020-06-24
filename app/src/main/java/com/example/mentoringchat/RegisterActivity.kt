@@ -75,6 +75,8 @@ class RegisterActivity : AppCompatActivity()
                         userHashMap["instagram"] = "https://m.instagram.com"
                         userHashMap["websiter"] = "https://www.google.com"
 
+                        // Add email and password.
+
                         refUsers.updateChildren(userHashMap)
                             .addOnCompleteListener{ task ->
                                 if(task.isSuccessful)
