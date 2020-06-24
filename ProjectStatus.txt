@@ -1,0 +1,4 @@
+Following implementations were made by HTTP requests,
+1. Login of the user
+2. Retrieving chat list of the user
+3. Sending/receiving messages to/from other users working
