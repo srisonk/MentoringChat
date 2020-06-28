@@ -1,19 +1,11 @@
 package com.example.mentoringchat
 
 import android.annotation.SuppressLint
-import android.app.Activity
-import android.app.ProgressDialog
-import android.content.Context
 import android.content.Intent
-import android.database.Cursor
-import android.graphics.Bitmap
 import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.provider.MediaStore
-import android.widget.Button
 import android.widget.Toast
-import android.widget.Toolbar
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.android.volley.Response
@@ -21,18 +13,8 @@ import com.android.volley.toolbox.Volley
 import com.example.mentoringchat.AdapterClasses.ChatsAdapter
 import com.example.mentoringchat.ModelClasses.Chat
 import com.example.mentoringchat.ModelClasses.FileDataPart
-import com.example.mentoringchat.ModelClasses.Users
 import com.example.mentoringchat.ModelClasses.VolleyFileUploadRequest
-import com.google.android.gms.tasks.Continuation
-import com.google.android.gms.tasks.Task
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.database.*
-import com.google.firebase.storage.FirebaseStorage
-import com.google.firebase.storage.StorageTask
-import com.google.firebase.storage.UploadTask
 import com.squareup.picasso.Picasso
-import kotlinx.android.synthetic.main.activity_asp.*
 import kotlinx.android.synthetic.main.activity_message_chat.*
 import org.json.JSONArray
 import org.json.JSONObject
@@ -48,26 +30,22 @@ import java.util.concurrent.Executors
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 
-
-
-
 class MessageChatActivity : AppCompatActivity()
 {
     var userIdVisit: String = ""
-    var firebaseUser : FirebaseUser? = null
     var chatsAdapter: ChatsAdapter? = null
     var mChatList: List<Chat>? = null
     lateinit var recycler_view_chats: RecyclerView
-    var reference: DatabaseReference? = null
-
     var loggedUser: String = ""
     var allUsers: String = ""
     var userName: String = ""
-
-    private var filePath : Uri? = null
+    var profile: String = ""
 
     private var imageData: ByteArray? = null
-    private val postURL: String = "https://ptsv2.com/t/54odo-1576291398/post" // remember to use your own api
+    private val postURL: String = "https://mentoringacademyipb.azurewebsites.net/api/Image"
+
+    private var userNameRec:String? = ""
+    private var profileRec:String? = ""
 
     companion object {
         private const val IMAGE_PICK_CODE = 999
@@ -89,6 +67,7 @@ class MessageChatActivity : AppCompatActivity()
             intent.putExtra("UserID",loggedUser)
             intent.putExtra("UserName",userName)
             intent.putExtra("AllUsers",allUsers)
+            intent.putExtra("profile",profile)
             startActivity(intent)
             finish()
         }
@@ -98,6 +77,7 @@ class MessageChatActivity : AppCompatActivity()
         loggedUser = intent.getStringExtra("user_id")
         allUsers = intent.getStringExtra("AllUsers")
         userName = intent.getStringExtra("UserName")
+        profile = intent.getStringExtra("profile")
         //firebaseUser = FirebaseAuth.getInstance().currentUser
 
         recycler_view_chats = findViewById(R.id.recycler_view_chats)
@@ -106,39 +86,36 @@ class MessageChatActivity : AppCompatActivity()
         linearLayoutManger.stackFromEnd = true
         recycler_view_chats.layoutManager = linearLayoutManger
 
+        /**
+         * The lower thread is executed so that it will leave the UI thread, enter the network thread and,
+         * GET the details of the user that is supposed to receive the message,
+         * when details received, it adds the username and profile picture of the receiver to the Activity.*/
+
         Executors.newSingleThreadExecutor().execute{
             val receiverName = URL("https://mentoringacademyipb.azurewebsites.net/api/users/$userIdVisit").readText()
             val answer = JSONArray(receiverName)
             val name:JSONObject = answer.get(0) as JSONObject
-            val userName = name.get("username").toString()
-            username_mchat.text = userName
+
+            userNameRec = name.get("username").toString()
+            profileRec = name.get("profile").toString()
+
+            username_mchat.text = userNameRec
+
+            this@MessageChatActivity.runOnUiThread {
+                Picasso.get().load(profileRec).into(profile_image_mChat)
+            }
         }
 
-        retrieveMessages(loggedUser, userIdVisit, "https://firebasestorage.googleapis.com/v0/b/mentoringchat-a0917.appspot.com/o/profile.png?alt=media&token=eb81b28e-519a-4111-bc9e-0b5d81ff33a2")
+        retrieveMessages(loggedUser, userIdVisit, profileRec)
 
 
-//        reference = FirebaseDatabase.getInstance().reference
-//            .child("Users").child(userIdVisit)
-//        reference!!.addValueEventListener(object : ValueEventListener{
-//            override fun onDataChange(p0: DataSnapshot)
-//            {
-//                /**********************UNCOMMENT THIS LATER*******************************/
-//                /*
-//                val user: Users? = p0.getValue(Users::class.java)
-//
-//                username_mchat.text = user!!.getUsername()
-//                Picasso.get().load(user.getProfile()).into(profile_image_mChat)
-//
-//                retrieveMessages(firebaseUser!!.uid, userIdVisit, user.getProfile())
-//                */
-//                /**********************UNCOMMENT ABOVE LATER*******************************/
-//            }
-//
-//            override fun onCancelled(p0: DatabaseError) {
-//
-//            }
-//        })
-
+        /**
+         * when send message button is tapped, sendMessageToUser() function is called passing the
+         * userId of the currently logged user,
+         * userId of the receiver,
+         * message content and,
+         * URL but blank since it is a text message.
+         */
         send_message_btn.setOnClickListener {
             val message = text_message.text.toString()
             if (message == "")
@@ -147,7 +124,7 @@ class MessageChatActivity : AppCompatActivity()
             }
             else
             {
-                sendMessageToUser(loggedUser, userIdVisit, message)
+                sendMessageToUser(loggedUser, userIdVisit, message,"")
                 val chat = Chat()
                 chat.setMessage(message)
                 chat.setReceiver(userIdVisit)
@@ -158,20 +135,30 @@ class MessageChatActivity : AppCompatActivity()
             text_message.setText("")
         }
 
+        /**
+         * when image button is tapped,
+         * user gets to select an image from the gallery that he wants to send as a message,
+         * and rest of the execution is done in OnActivityResult()
+         */
+
         attach_image_file_btn.setOnClickListener {
             val intent = Intent()
             intent.action = Intent.ACTION_GET_CONTENT
             intent.type = "image/*"
-            startActivityForResult(Intent.createChooser(intent,"Select an image"), 438)
+            startActivityForResult(Intent.createChooser(intent,"Select an image"), IMAGE_PICK_CODE)
         }
 
         seenMessage(userIdVisit)
     }
 
-
+    /**
+     * The lower function when called upon the button click,
+     * converts all the fields to JSON object and makes ready to POST to /api/messages,
+     * converts logged user ID and receiver user ID to JSON object and makes ready to POST to /api/chatList
+     * Both of the objects are converted to strings and then POST request is made to respective URLs*/
 
     @SuppressLint("SimpleDateFormat")
-    private fun sendMessageToUser(senderId: String?, receiverId: String?, message: String)
+    private fun sendMessageToUser(senderId: String?, receiverId: String?, message: String, url: String?)
     {
         val sdf = SimpleDateFormat("yyyy-MM-dd")
         val currentDate = sdf.format(Date())
@@ -180,6 +167,7 @@ class MessageChatActivity : AppCompatActivity()
         messageObject.put("Id_receiver",receiverId!!.toInt())
         messageObject.put("content",message)
         messageObject.put("TimeStamp",currentDate)
+        messageObject.put("url",url)
 
         val messageListObject = JSONObject()
         messageListObject.put("Id_sender",senderId!!.toInt())
@@ -189,7 +177,7 @@ class MessageChatActivity : AppCompatActivity()
             post("https://mentoringacademyipb.azurewebsites.net/api/messages", messageObject.toString())
             post("https://mentoringacademyipb.azurewebsites.net/api/chatList", messageListObject.toString())
         }
-        Thread.sleep(2500)
+        Thread.sleep(1500)
     }
 
     fun post(url: String, body: String): String {
@@ -223,74 +211,18 @@ class MessageChatActivity : AppCompatActivity()
             }
     }
 
-    /*override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
 
-        if(requestCode == 438 && resultCode == RESULT_OK && data!= null && data!!.data != null){
-            val progressBar =  ProgressDialog(this)
-            progressBar.setMessage("The image is being uploaded, please hold on..")
-            progressBar.show()
-
-            val fileUri = data.data
-            val storageReference = FirebaseStorage.getInstance().reference.child("Chat Images")
-            val ref = FirebaseDatabase.getInstance().reference
-            val messageId = ref.push().key
-            val filePath = storageReference.child("$messageId.jpg")
-
-            var uploadTask: StorageTask<*>
-            uploadTask = filePath.putFile(fileUri!!)
-
-            uploadTask.continueWithTask(Continuation <UploadTask.TaskSnapshot, Task<Uri>>{ task ->
-                if(!task.isSuccessful)
-                {
-                    task.exception?.let{
-                        throw it
-                    }
-                }
-                return@Continuation filePath.downloadUrl
-            }).addOnCompleteListener{task ->
-                if(task.isSuccessful){
-                    val downloadUrl = task.result
-                    val url = downloadUrl.toString()
-
-                    val sdf = SimpleDateFormat("yyyy-MM-dd")
-                    val currentDate = sdf.format(Date())
-                    val messageObject = JSONObject()
-                    messageObject.put("Id_sender",loggedUser!!.toInt())
-                    messageObject.put("Id_receiver",userIdVisit!!.toInt())
-                    messageObject.put("content","sent you an image.")
-                    messageObject.put("TimeStamp",currentDate)
-                    //messageObject.put("url",url)
-
-                    Executors.newSingleThreadExecutor().execute{
-                        post("https://mentoringacademyipb.azurewebsites.net/api/messages", messageObject.toString())
-                        progressBar.dismiss()
-                    }
-                    Thread.sleep(2500)
-
-//                    val downloadUrl = task.result
-//                    val url = downloadUrl.toString()
-//
-//                    val messageHashMap = HashMap<String, Any?>()
-//                    messageHashMap["sender"] = firebaseUser!!.uid
-//                    messageHashMap["message"] = "sent you an image."
-//                    messageHashMap["receiver"] = userIdVisit
-//                    messageHashMap["isseen"] = false
-//                    messageHashMap["url"] = url
-//                    messageHashMap["messageId"] = messageId
-//
-//                    ref.child("Chats").child(messageId!!).setValue(messageHashMap)
-
-//                    progressBar.dismiss()
-                }
-            }
-        }
-    }*/
-
+    /**
+     * The lower function retrieves the messages between users and displays them
+     * A GET request is made to /api/messages
+     * Messages are converted to JSON array and is array is iterated and converted to JSON object.
+     * In each object, it is checked if the sender id is equal to the logged user id and,
+     * receiver id is equal to the user that has been selected to send message to.
+     * When the match is found, a chatList is created and is passed to the ChatsAdapter in order to display the messages in correct places.
+     */
     private fun retrieveMessages(senderId: String, receiverId: String?, receiverImageUrl: String?)
     {
         mChatList = ArrayList()
-
         Executors.newSingleThreadExecutor().execute{
             val allMessagesString: String = URL("https://mentoringacademyipb.azurewebsites.net/api/messages").readText()
             val allMessages = JSONArray(allMessagesString)
@@ -301,22 +233,26 @@ class MessageChatActivity : AppCompatActivity()
                 chat.setMessageId(jsonObj.get("msg_id").toString())
                 chat.setReceiver(jsonObj.get("id_receiver").toString())
                 chat.setSender(jsonObj.get("id_sender").toString())
-                //contactList.add(jsonObj.get("username").toString())
-
-                if (chat!!.getReceiver().equals(senderId) && chat.getSender().equals(receiverId) || chat.getReceiver().equals(receiverId) && chat.getSender().equals(senderId))
+                chat.setUrl(jsonObj.get("url").toString())
+                if (chat!!.getReceiver().equals(senderId) && chat.getSender().equals(receiverId) ||
+                    chat.getReceiver().equals(receiverId) && chat.getSender().equals(senderId))
                 {
                     (mChatList as ArrayList<Chat>).add(chat)
                     chatsAdapter!!.notifyDataSetChanged()
                 }
-                chatsAdapter = ChatsAdapter(this@MessageChatActivity, (mChatList as ArrayList<Chat>), loggedUser)
+                chatsAdapter = ChatsAdapter(this@MessageChatActivity, (mChatList as ArrayList<Chat>), loggedUser, receiverImageUrl!!)
                 recycler_view_chats.adapter = chatsAdapter
-
-                //chatsAdapter = ChatsAdapter(this@MessageChatActivity, (mChatList as ArrayList<Chat>), receiverImageUrl!!)
             }
         }
-        Thread.sleep(2500)
+        Thread.sleep(1500)
     }
 
+    /**
+     * This method helps is re-rendering the current activity by updating the message list.
+     * It is called when user sends the message to the receiver.
+     * When the if condition is verified, a new ArrayList of type Chat gets contents added,
+     * ChatsAdapter is recalled in order to stack the new messages to the view.
+     */
     private fun filter(senderId: String, receiverId: String?){
         val myList = ArrayList<Chat>()
 
@@ -325,12 +261,9 @@ class MessageChatActivity : AppCompatActivity()
                 myList.add(s)
             }
         }
-        chatsAdapter = ChatsAdapter(this@MessageChatActivity, myList, loggedUser)
+        chatsAdapter = ChatsAdapter(this@MessageChatActivity, myList, loggedUser, profileRec!!)
         recycler_view_chats.adapter = chatsAdapter
     }
-
-
-    var seenListener: ValueEventListener? = null
 
 
     private fun seenMessage(userId: String)
@@ -341,28 +274,22 @@ class MessageChatActivity : AppCompatActivity()
         {
             chat.setIsSeen(true)
         }
-
-//        seenListener = reference.addValueEventListener(object : ValueEventListener{
-//            override fun onDataChange(p0: DataSnapshot) {
-//                for(dataSnapshot in p0.children)
-//                {
-//                    val chat = dataSnapshot.getValue(Chat::class.java)
-//                    if (chat!!.getReceiver().equals(firebaseUser!!.uid) && chat!!.getSender().equals(userId))
-//                    {
-//                        val hashMap = HashMap<String, Any>()
-//                        hashMap["isseen"] = true
-//                        dataSnapshot.ref.updateChildren(hashMap)
-//                    }
-//                }
-//            }
-//
-//            override fun onCancelled(p0: DatabaseError) {
-//
-//            }
-//        })
     }
 
-    private fun uploadImage() {
+    /**
+     * The lower method is executed when user selects an image from the gallery.
+     * The picked image is converted into byte array and POST is requested to /api/Image using Volley library
+     * File name is provided using the current system time in millisecond.
+     */
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        val uri = data?.data
+        if (uri != null) {
+            createImageData(uri)
+        }
+        super.onActivityResult(requestCode, resultCode, data)
+
+        var fileName = "image"+System.currentTimeMillis()+".jpg"
+
         imageData?: return
         val request = object : VolleyFileUploadRequest(
             Method.POST,
@@ -376,11 +303,23 @@ class MessageChatActivity : AppCompatActivity()
         ) {
             override fun getByteData(): MutableMap<String, FileDataPart> {
                 var params = HashMap<String, FileDataPart>()
-                params["imageFile"] = FileDataPart("image", imageData!!, "jpeg")
+                params["file"] = FileDataPart(fileName, imageData!!, "jpeg")
                 return params
             }
         }
         Volley.newRequestQueue(this).add(request)
+
+        val message = "sent you an image."
+        val url = "https://mentoringacademyipb.azurewebsites.net/api/Gallery/$fileName"
+
+        sendMessageToUser(loggedUser,userIdVisit,message,url)
+        val chat = Chat()
+        chat.setMessage(message)
+        chat.setReceiver(userIdVisit)
+        chat.setSender(loggedUser)
+        chat.setUrl(url)
+        (mChatList as ArrayList<Chat>).add(chat)
+        filter(loggedUser,userIdVisit)
     }
 
     @Throws(IOException::class)
@@ -389,16 +328,5 @@ class MessageChatActivity : AppCompatActivity()
         inputStream?.buffered()?.use {
             imageData = it.readBytes()
         }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (resultCode == Activity.RESULT_OK && requestCode == IMAGE_PICK_CODE) {
-            val uri = data?.data
-            if (uri != null) {
-                imageView.setImageURI(uri)
-                createImageData(uri)
-            }
-        }
-        super.onActivityResult(requestCode, resultCode, data)
     }
 }

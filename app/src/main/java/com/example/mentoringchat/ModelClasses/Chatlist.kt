@@ -11,7 +11,7 @@ class Chatlist
     constructor(id: String,
                 Id_sender: String,
                 Id_receiver: String
-                )
+    )
     {
         this.id = id
         this.Id_sender = Id_sender

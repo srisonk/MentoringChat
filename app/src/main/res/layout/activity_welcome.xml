@@ -12,22 +12,12 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="#820053"
+        android:textColor="@color/white"
         android:textSize="35sp"
         android:textStyle="bold"
-        android:text="IPB Mentoring Chat"/>
+        android:text="IPB CHAT APPLICATION"/>
 
-    <Button
-        android:id="@+id/register_welcome_btn"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Register"
-        android:layout_marginTop="40dp"
-        android:textColor="@android:color/white"
-        android:background="@color/colorPrimaryDark"
-        android:layout_marginLeft="20dp"
-        android:layout_marginRight="20dp"
-        />
+
 
     <Button
         android:id="@+id/login_welcome_btn"
@@ -38,6 +28,6 @@
         android:layout_marginLeft="20dp"
         android:layout_marginRight="20dp"
         android:textColor="@android:color/white"
-        android:background="@color/colorPrimaryDark"
+        android:background="@drawable/custom_button"
         />
 </LinearLayout>

@@ -55,38 +55,15 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/cv1"
         android:gravity="center"
-        android:background="@color/colorProfile"
         android:layout_marginTop="40dp"
         android:orientation="horizontal"
         android:padding="6dp">
 
-        <ImageView
-            android:id="@+id/set_facebook"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:src="@drawable/fb"
-            android:scaleType="centerCrop"
-            android:layout_marginTop="2dp"
-            android:layout_marginRight="35dp"
-            android:layout_gravity="center"/>
-
-        <ImageView
-            android:id="@+id/set_instagram"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:src="@drawable/instagram"
-            android:scaleType="centerCrop"
-            android:layout_marginRight="35dp"
-            android:layout_gravity="center"/>
-
-        <ImageView
-            android:id="@+id/set_websiter"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
-            android:src="@drawable/website"
-            android:scaleType="centerCrop"
-            android:layout_marginTop="3dp"
-            android:layout_gravity="center"/>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="© Instituto Politécnico de Bragança"
+            android:gravity="center"/>
     </LinearLayout>
 
 </RelativeLayout>

@@ -17,35 +17,38 @@ import com.squareup.picasso.Picasso
 import de.hdodenhof.circleimageview.CircleImageView
 import kotlinx.android.synthetic.main.message_item_left.view.*
 
+// Defining the constructors as per the requirement for the adapter
+
 class ChatsAdapter(
     mContext: Context,
     mChatList: List<Chat>,
-    uID: String
-//    ,
-//    imageUrl: String
+    uID: String,
+    imageUrl: String
 ) : RecyclerView.Adapter<ChatsAdapter.ViewHolder?>()
 {
     private val mContext: Context
     private val mChatList: List<Chat>
     private val uID: String
-//    private val imageUrl: String
-    //var firebaseUser : FirebaseUser = FirebaseAuth.getInstance().currentUser!!
+    private val imageUrl: String
 
+    //Initializing the constructors
     init {
         this.mChatList = mChatList
         this.mContext = mContext
         this.uID = uID
-//        this.imageUrl = imageUrl
+        this.imageUrl = imageUrl
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, position: Int): ViewHolder
     {
+        // Sender Side (Logged in user)
         return if (position == 1)
         {
             val view:View = LayoutInflater.from(mContext).inflate(R.layout.message_item_right, parent, false)
             ViewHolder(view)
         }
         else
+        // Receiver Side
         {
             val view:View = LayoutInflater.from(mContext).inflate(R.layout.message_item_left, parent, false)
             ViewHolder(view)
@@ -58,10 +61,13 @@ class ChatsAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int)
     {
-        val imageUrl = "https://firebasestorage.googleapis.com/v0/b/mentoringchat-a0917.appspot.com/o/cover.jpg?alt=media&token=ed336236-c80c-4a1c-ba98-8a6980a8ee1f"
         val chat: Chat = mChatList[position]
 
-        Picasso.get().load(imageUrl).into(holder.profile_image)
+        // Verifies if the User model class contained an image in his profile. Displays the receiver's image in chat.
+        if(imageUrl != "null" && imageUrl != "")
+        {
+            Picasso.get().load(imageUrl).into(holder.profile_image)
+        }
 
         //Image Message
         if(chat.getMessage().equals("sent you an image.") && !chat.getUrl().equals(""))
@@ -81,13 +87,12 @@ class ChatsAdapter(
                 Picasso.get().load(chat.getUrl()).into(holder.left_image_view)
             }
         }
-        //Text Message
+        // Text Message
         else
         {
             holder.show_text_message!!.text = chat.getMessage()
         }
 
-        //Sent and seen message status
         if(position == mChatList.size-1)
         {
             if(chat.isIsSeen())
@@ -119,6 +124,7 @@ class ChatsAdapter(
         }
     }
 
+    // Providing and storing the value of the layout files element
     inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView)
     {
         var profile_image: CircleImageView? = null

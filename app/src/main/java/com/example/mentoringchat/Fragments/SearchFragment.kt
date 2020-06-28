@@ -16,34 +16,23 @@ import com.example.mentoringchat.MainActivity
 import com.example.mentoringchat.ModelClasses.Users
 
 import com.example.mentoringchat.R
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
-import kotlinx.android.synthetic.main.fragment_search.*
 import org.json.JSONArray
 import org.json.JSONObject
-import java.net.URL
-import java.util.concurrent.Executors
 
+/**
+ * This fragment is responsible to display all the users in the database,
+ * Allows the user to search a particular user in the database,
+ * Send message to a selected user.
+ */
 class SearchFragment : Fragment(){
     private var userAdapter: UserAdapter? = null
     private var mUsers: List<Users>? = null
     private var recyclerView: RecyclerView? = null
     private var searchEditText: EditText? = null
 
-    private var song: String? = null
-
-    var contactList = mutableListOf<String>()
-
-    /***************************************************************************************************************/
-
     lateinit var ACTIVITY: MainActivity
 
     private var myUID: String? = "0"
-
-    /***************************************************************************************************************/
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -67,9 +56,10 @@ class SearchFragment : Fragment(){
             }
 
             override fun onTextChanged(cs: CharSequence?, start: Int, before: Int, count: Int) {
-                //searchForUsers(cs.toString().toLowerCase())
+
             }
 
+            // When user types something in the search bar, filter function is called.
             override fun afterTextChanged(s: Editable?) {
                 filter(s.toString())
             }
@@ -88,29 +78,16 @@ class SearchFragment : Fragment(){
         myUID = ACTIVITY.loggedUserId.toString()
     }
 
+    /**
+     * The lower function gets all the user from the MainActivity and store them in allUsers local val
+     * the string of all users is converted to JSON array
+     * Each element of array is iterated and converted to JSON object
+     * Key-value pair from JSON object is extracted and stored to User Model class.
+     * The list of user is passed to UserAdapter in order to display to the UI.
+     * */
     private fun retrieveAllUsers()
     {
-//        if (searchEditText!!.text.toString() == ""){
-//            var myval : String = "[{\"user_id\":3,\"username\":\"propername\",\"gender\":\"Female\",\"nationality\":\"Spanish\",\"password\":\"fml\",\"birthdate\":\"1984-03-15\",\"course_id\":1},{\"user_id\":4,\"username\":\"admin\",\"gender\":\"Male\",\"nationality\":\"French\",\"password\":\"admin\",\"birthdate\":\"16-02-1997\",\"course_id\":1},{\"user_id\":5,\"username\":\"John\",\"gender\":\"Male\",\"nationality\":\"American\",\"password\":\"doe\",\"birthdate\":\"1984-03-15\",\"course_id\":1},{\"user_id\":6,\"username\":\"Mark\",\"gender\":\"Male\",\"nationality\":\"American\",\"password\":\"doe\",\"birthdate\":\"1984-03-15\",\"course_id\":1},{\"user_id\":7,\"username\":\"Max\",\"gender\":\"Male\",\"nationality\":\"American\",\"password\":\"doe\",\"birthdate\":\"1984-03-15\",\"course_id\":1},{\"user_id\":8,\"username\":\"Andrew\",\"gender\":\"Male\",\"nationality\":\"American\",\"password\":\"doe\",\"birthdate\":\"1984-03-15\",\"course_id\":1},{\"user_id\":13,\"username\":\"Lockwood\",\"gender\":\"Male\",\"nationality\":\"American\",\"password\":\"doe\",\"birthdate\":\"1984-03-15\",\"course_id\":1},{\"user_id\":15,\"username\":\"pog\",\"gender\":\"Male\",\"nationality\":\"American\",\"password\":\"pog\",\"birthdate\":\"16-02-1997\",\"course_id\":1},{\"user_id\":17,\"username\":\"teste1username\",\"gender\":\"Female\",\"nationality\":\"Portuguese\",\"password\":\"teste1password\",\"birthdate\":\"26-09-1998\",\"course_id\":1},{\"user_id\":24,\"username\":\"WebTest\",\"gender\":\"Male\",\"nationality\":\"American\",\"password\":\"pog\",\"birthdate\":\"16-02-1997\",\"course_id\":1},{\"user_id\":27,\"username\":\"usernameprpoper\",\"gender\":\"Male\",\"nationality\":\"American\",\"password\":\"pog\",\"birthdate\":\"16-02-1997\",\"course_id\":1}]"
-//            val allUsers = JSONArray(myval)
-//
-//
-//            for(i in 0 until allUsers.length()){
-//                val jsonObj : JSONObject = allUsers.getJSONObject(i)
-//                if(!(ACTIVITY.loggedUserId)!!.toInt().equals(jsonObj.get("user_id")))
-//                {
-//                    contactList.add(jsonObj.get("username").toString())
-//                }
-//            }
-//
-//            userAdapter = UserAdapter(context!!, contactList.toList()!!, false)
-//            recyclerView!!.adapter = userAdapter
-//        }
-
         if (searchEditText!!.text.toString() == "") {
-//            val myval =
-//                "[{\"user_id\":3,\"username\":\"propername\",\"gender\":\"Female\",\"nationality\":\"Spanish\",\"password\":\"fml\",\"birthdate\":\"1984-03-15\",\"course_id\":1},{\"user_id\":4,\"username\":\"admin\",\"gender\":\"Male\",\"nationality\":\"French\",\"password\":\"admin\",\"birthdate\":\"16-02-1997\",\"course_id\":1},{\"user_id\":5,\"username\":\"John\",\"gender\":\"Male\",\"nationality\":\"American\",\"password\":\"doe\",\"birthdate\":\"1984-03-15\",\"course_id\":1},{\"user_id\":6,\"username\":\"Mark\",\"gender\":\"Male\",\"nationality\":\"American\",\"password\":\"doe\",\"birthdate\":\"1984-03-15\",\"course_id\":1},{\"user_id\":7,\"username\":\"Max\",\"gender\":\"Male\",\"nationality\":\"American\",\"password\":\"doe\",\"birthdate\":\"1984-03-15\",\"course_id\":1},{\"user_id\":8,\"username\":\"Andrew\",\"gender\":\"Male\",\"nationality\":\"American\",\"password\":\"doe\",\"birthdate\":\"1984-03-15\",\"course_id\":1},{\"user_id\":13,\"username\":\"Lockwood\",\"gender\":\"Male\",\"nationality\":\"American\",\"password\":\"doe\",\"birthdate\":\"1984-03-15\",\"course_id\":1},{\"user_id\":15,\"username\":\"pog\",\"gender\":\"Male\",\"nationality\":\"American\",\"password\":\"pog\",\"birthdate\":\"16-02-1997\",\"course_id\":1},{\"user_id\":17,\"username\":\"teste1username\",\"gender\":\"Female\",\"nationality\":\"Portuguese\",\"password\":\"teste1password\",\"birthdate\":\"26-09-1998\",\"course_id\":1},{\"user_id\":24,\"username\":\"WebTest\",\"gender\":\"Male\",\"nationality\":\"American\",\"password\":\"pog\",\"birthdate\":\"16-02-1997\",\"course_id\":1},{\"user_id\":27,\"username\":\"usernameprpoper\",\"gender\":\"Male\",\"nationality\":\"American\",\"password\":\"pog\",\"birthdate\":\"16-02-1997\",\"course_id\":1}]"
-//            val allUsers = JSONArray(myval)
             val allUsers = JSONArray(ACTIVITY.dbUsers)
 
             for (i in 0 until allUsers.length()) {
@@ -124,75 +101,23 @@ class SearchFragment : Fragment(){
                     user.setPassword(jsonObj.get("password").toString())
                     user.setBirthdate(jsonObj.get("birthdate").toString())
                     user.setCourseId(jsonObj.get("course_id").toString())
-                    //contactList.add(jsonObj.get("username").toString())
+                    user.setProfile(jsonObj.get("profile").toString())
+                    user.setCover(jsonObj.get("cover").toString())
                     (mUsers as ArrayList<Users>).add(user)
                 }
             }
-            userAdapter = UserAdapter(context!!, mUsers!!, false, ACTIVITY.loggedUserId.toString(), ACTIVITY.dbUsers.toString(), ACTIVITY.userName.toString())
-            //userAdapter = UserAdapter(context!!, contactList.toList()!!, false)
+            // isChatCheck is set to false because here in contact list we don't want to display the last message if exist between users.
+            userAdapter = UserAdapter(context!!, mUsers!!, false, ACTIVITY.loggedUserId.toString(), ACTIVITY.dbUsers.toString(), ACTIVITY.userName.toString(), ACTIVITY.profile.toString())
             recyclerView!!.adapter = userAdapter
         }
 
-        /********************************CP2***********************************/
-
-
-        /*Executors.newSingleThreadExecutor().execute {
-            //userDetails = URL("https://mentoringacademyipb.azurewebsites.net/api/users/$loggedUserId").readText()
-            userDetails = URL("http://10.0.2.2:5000/api/users/").readText()
-            val allUsers = JSONArray(userDetails)
-
-            for(i in 0 until allUsers.length()){
-                val jsonObj : JSONObject = allUsers.get(i) as JSONObject
-                if(!(ACTIVITY.loggedUserId)!!.equals(jsonObj.get("user_id"))){
-                    userList!!.add(jsonObj.get("username").toString())
-                }
-            }
-        }
-
-        Thread.sleep(15000)*/
-
-        /*******************************CP2************************************/
-
-
-        /*refUsers.addValueEventListener(object : ValueEventListener{
-            override fun onCancelled(p0: DatabaseError) {
-
-            }
-
-            override fun onDataChange(p0: DataSnapshot)
-            {
-                (mUsers as ArrayList<Users>).clear()
-                if (searchEditText!!.text.toString() == "")
-                {
-                    for(snapshot in p0.children)
-                    {
-                        val user: Users? = snapshot.getValue(Users::class.java)
-                        if (!(user!!.getUID()).equals(firebaseUserID))
-                        {
-                            (mUsers as ArrayList<Users>).add(user)
-                        }
-                    }
-                    userAdapter = UserAdapter(context!!, mUsers!!, false)
-                    recyclerView!!.adapter = userAdapter
-                }
-            }
-
-        })*/
-
     }
 
-//    private fun filter(text: String){
-//        var searchList = mutableListOf<String>()
-//
-//        for(s in contactList){
-//            if(s.toLowerCase().contains(text.toLowerCase())){
-//                searchList.add(s)
-//            }
-//        }
-//        userAdapter = UserAdapter(context!!, searchList.toList()!!, false)
-//        recyclerView!!.adapter = userAdapter
-//    }
-
+    /**
+     * The lower function first gets all the users, stores them in ArrayList of type Users
+     * The text that user types is converted to lowercase and then it checks if,
+     * the character that user typed matches any character in the list of username
+     * when match is found, a new list is created and that new list is passed to userAdapter to display the names*/
     private fun filter(text: String){
         val myList = ArrayList<Users>()
 
@@ -201,71 +126,8 @@ class SearchFragment : Fragment(){
                 myList.add(s)
             }
         }
-        userAdapter = UserAdapter(context!!, myList.toList(), false, ACTIVITY.loggedUserId.toString(), ACTIVITY.dbUsers.toString(), ACTIVITY.userName.toString())
+        userAdapter = UserAdapter(context!!, myList.toList(), false, ACTIVITY.loggedUserId.toString(), ACTIVITY.dbUsers.toString(),
+            ACTIVITY.userName.toString(), ACTIVITY.profile.toString())
         recyclerView!!.adapter = userAdapter
-
-//        var searchList = mutableListOf<String>()
-//
-//        for(s in contactList){
-//            if(s.toLowerCase().contains(text.toLowerCase())){
-//                searchList.add(s)
-//            }
-//        }
-//        userAdapter = UserAdapter(context!!, searchList.toList()!!, false)
-//        recyclerView!!.adapter = userAdapter
-    }
-
-
-
-
-    private fun searchForUsers(str: String)
-    {
-//        if (searchEditText!!.text.toString() == ""){
-//            var myval : String = "[{\"user_id\":3,\"username\":\"propername\",\"gender\":\"Female\",\"nationality\":\"Spanish\",\"password\":\"fml\",\"birthdate\":\"1984-03-15\",\"course_id\":1},{\"user_id\":4,\"username\":\"admin\",\"gender\":\"Male\",\"nationality\":\"French\",\"password\":\"admin\",\"birthdate\":\"16-02-1997\",\"course_id\":1},{\"user_id\":5,\"username\":\"John\",\"gender\":\"Male\",\"nationality\":\"American\",\"password\":\"doe\",\"birthdate\":\"1984-03-15\",\"course_id\":1},{\"user_id\":6,\"username\":\"Mark\",\"gender\":\"Male\",\"nationality\":\"American\",\"password\":\"doe\",\"birthdate\":\"1984-03-15\",\"course_id\":1},{\"user_id\":7,\"username\":\"Max\",\"gender\":\"Male\",\"nationality\":\"American\",\"password\":\"doe\",\"birthdate\":\"1984-03-15\",\"course_id\":1},{\"user_id\":8,\"username\":\"Andrew\",\"gender\":\"Male\",\"nationality\":\"American\",\"password\":\"doe\",\"birthdate\":\"1984-03-15\",\"course_id\":1},{\"user_id\":13,\"username\":\"Lockwood\",\"gender\":\"Male\",\"nationality\":\"American\",\"password\":\"doe\",\"birthdate\":\"1984-03-15\",\"course_id\":1},{\"user_id\":15,\"username\":\"pog\",\"gender\":\"Male\",\"nationality\":\"American\",\"password\":\"pog\",\"birthdate\":\"16-02-1997\",\"course_id\":1},{\"user_id\":17,\"username\":\"teste1username\",\"gender\":\"Female\",\"nationality\":\"Portuguese\",\"password\":\"teste1password\",\"birthdate\":\"26-09-1998\",\"course_id\":1},{\"user_id\":24,\"username\":\"WebTest\",\"gender\":\"Male\",\"nationality\":\"American\",\"password\":\"pog\",\"birthdate\":\"16-02-1997\",\"course_id\":1},{\"user_id\":27,\"username\":\"usernameprpoper\",\"gender\":\"Male\",\"nationality\":\"American\",\"password\":\"pog\",\"birthdate\":\"16-02-1997\",\"course_id\":1}]"
-//            val allUsers = JSONArray(myval)
-//
-//
-//            for(i in 0 until allUsers.length()){
-//                val jsonObj : JSONObject = allUsers.getJSONObject(i)
-//                if(!(ACTIVITY.loggedUserId)!!.toInt().equals(jsonObj.get("user_id")))
-//                {
-//                    contactList.add(jsonObj.get("username").toString())
-//                }
-//            }
-//
-//            userAdapter = UserAdapter(context!!, contactList.toList()!!, false)
-//            recyclerView!!.adapter = userAdapter
-//        }
-
-
-
-        /*
-        var firebaseUserID = FirebaseAuth.getInstance().currentUser!!.uid
-
-        val queryUsers = FirebaseDatabase.getInstance().reference
-            .child("Users").orderByChild("search")
-            .startAt(str)
-            .endAt(str + "\uf8ff")
-
-        queryUsers.addValueEventListener(object : ValueEventListener{
-            override fun onCancelled(p0: DatabaseError) {
-
-            }
-
-            override fun onDataChange(p0: DataSnapshot) {
-                (mUsers as ArrayList<Users>).clear()
-                for(snapshot in p0.children)
-                {
-                    val user: Users? = snapshot.getValue(Users::class.java)
-                    if (!(user!!.getUID()).equals(firebaseUserID))
-                    {
-                        (mUsers as ArrayList<Users>).add(user)
-                    }
-                }
-                userAdapter = UserAdapter(context!!, mUsers!!, false)
-                recyclerView!!.adapter = userAdapter
-            }
-
-        })*/
     }
 }

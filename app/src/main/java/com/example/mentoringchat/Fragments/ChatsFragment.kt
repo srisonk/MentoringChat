@@ -14,20 +14,13 @@ import com.example.mentoringchat.ModelClasses.Chatlist
 import com.example.mentoringchat.ModelClasses.Users
 
 import com.example.mentoringchat.R
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
-import com.google.firebase.database.DataSnapshot
-import com.google.firebase.database.DatabaseError
-import com.google.firebase.database.FirebaseDatabase
-import com.google.firebase.database.ValueEventListener
 import org.json.JSONArray
 import org.json.JSONObject
 import java.net.URL
 import java.util.concurrent.Executors
-import kotlin.concurrent.thread
 
 /**
- * A simple [Fragment] subclass.
+ * This fragment is responsible to display the users and last messages when logged user initiates the chat
  */
 class ChatsFragment : Fragment() {
 
@@ -35,10 +28,8 @@ class ChatsFragment : Fragment() {
     private var mUsers: List<Users>? = null
     private var usersChatList: List<Chatlist>? = null
     lateinit var recycler_view_chatlist : RecyclerView
-    private var firebaseUser: FirebaseUser? = null
 
     lateinit var ACTIVITY: MainActivity
-    private var myUID: String = "7"
 
     private var userRetrieved = ""
     private var messageListRetrieved: String? = null
@@ -55,12 +46,17 @@ class ChatsFragment : Fragment() {
         recycler_view_chatlist.setHasFixedSize(true)
         recycler_view_chatlist.layoutManager = LinearLayoutManager(context)
 
-        //firebaseUser = FirebaseAuth.getInstance().currentUser
-
         usersChatList = ArrayList()
 
         getDatabaseContent()
-        Thread.sleep(4500)
+        Thread.sleep(2800)
+
+        /**
+         * The messageList string received from getDatabaseContent() is converted into JSON array
+         * Each content of array is converted to individual JSON object
+         * JSON objects are stored in the chatList model class
+         * chatList model class has been initialized inside the loop so that it will reset its value and expect the new value every time we iterate the array
+         * chatList model class stores all the array value into itself*/
 
         val allChatList = JSONArray(messageListRetrieved)
 
@@ -74,25 +70,6 @@ class ChatsFragment : Fragment() {
         }
         retrieveChatLists()
 
-//        val ref = FirebaseDatabase.getInstance().reference.child("ChatList").child(firebaseUser!!.uid)
-//        ref!!.addValueEventListener(object : ValueEventListener{
-//            override fun onDataChange(p0: DataSnapshot) {
-//                (usersChatList as ArrayList).clear()
-//
-//                for(dataSnapshot in p0.children)
-//                {
-//                    val chatList = dataSnapshot.getValue(Chatlist::class.java)
-//
-//                    (usersChatList as ArrayList).add(chatList!!)
-//                }
-//                retrieveChatLists()
-//            }
-//
-//            override fun onCancelled(p0: DatabaseError) {
-//
-//            }
-//        })
-
         return view
     }
 
@@ -101,10 +78,15 @@ class ChatsFragment : Fragment() {
         ACTIVITY = context as MainActivity
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        myUID = ACTIVITY.loggedUserId.toString()
-    }
+    /**
+     * The lower function is used to retrieve the chatList for the user that has logged in
+     * myval gets the value of all users in the database from the call in private function getDatabaseContent()
+     * users are converted to JSON array
+     * JSON array of users are converted to JSON object and iterated individually
+     * all Users are stored to Users Model class
+     * later the verification is made is the user that is stored to model class is the receiver in the chat list, that user is added to the mUsers ArrayList
+     * mUsers will contain the users that are receiver.
+     * mUsers will be passed to userAdapter in order to display them in the list in the UI*/
 
     private fun retrieveChatLists()
     {
@@ -124,6 +106,8 @@ class ChatsFragment : Fragment() {
             user.setPassword(jsonObj.get("password").toString())
             user.setBirthdate(jsonObj.get("birthdate").toString())
             user.setCourseId(jsonObj.get("course_id").toString())
+            user.setProfile(jsonObj.get("profile").toString())
+            user.setCover(jsonObj.get("cover").toString())
 
             for(eachChatList in usersChatList!!)
             {
@@ -133,37 +117,17 @@ class ChatsFragment : Fragment() {
                 }
             }
         }
-        userAdapter = UserAdapter(context!!, (mUsers as ArrayList<Users>), true, ACTIVITY.loggedUserId.toString(), ACTIVITY.dbUsers.toString(), ACTIVITY.userName.toString())
+        // Here isChatCheck is supplied as true in order to view the last text message in this Fragment below the user name.
+        userAdapter = UserAdapter(context!!, (mUsers as ArrayList<Users>), true, ACTIVITY.loggedUserId.toString(),
+            ACTIVITY.dbUsers.toString(), ACTIVITY.userName.toString(), ACTIVITY.profile.toString())
         recycler_view_chatlist.adapter = userAdapter
-
-
-
-//        val ref = FirebaseDatabase.getInstance().reference.child("Users")
-//        ref!!.addValueEventListener(object : ValueEventListener{
-//            override fun onDataChange(p0: DataSnapshot) {
-//                (mUsers as ArrayList).clear()
-//
-//                for(dataSnapshot in p0.children)
-//                {
-//                    val user = dataSnapshot.getValue(Users::class.java)
-//
-//                    for(eachChatList in usersChatList!!)
-//                    {
-//                        if(user!!.getUID().equals(eachChatList.getId())){
-//                            (mUsers as ArrayList).add(user!!)
-//                        }
-//                    }
-//                }
-//                userAdapter = UserAdapter(context!!, (mUsers as ArrayList<Users>), true, ACTIVITY.loggedUserId.toString())
-//                recycler_view_chatlist.adapter = userAdapter
-//            }
-//
-//            override fun onCancelled(p0: DatabaseError) {
-//
-//            }
-//        })
     }
 
+    /**
+     * This function makes the GET request in the database to the chatList
+     * chatList can be retrieved as per the userId.
+     * When the userID is provided, it will return the unique chatList for that sender.
+     * Second GET request is to retrieve all the users from the database.*/
     private fun getDatabaseContent()
     {
         Executors.newSingleThreadExecutor().execute {
@@ -171,6 +135,4 @@ class ChatsFragment : Fragment() {
             userRetrieved = URL("https://mentoringacademyipb.azurewebsites.net/api/users/").readText()
         }
     }
-
-
 }

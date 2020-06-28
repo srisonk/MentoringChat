@@ -20,12 +20,12 @@ class Chat
         url: String,
         messageId: String
     ) {
-        this.Id_sender = Id_sender    // OK
-        this.Content = Content  // OK
-        this.Id_receiver = Id_receiver    // OK
+        this.Id_sender = Id_sender
+        this.Content = Content
+        this.Id_receiver = Id_receiver
         this.isseen = isseen
         this.url = url
-        this.messageId = messageId  // OK
+        this.messageId = messageId
     }
 
     fun getSender(): String?{
